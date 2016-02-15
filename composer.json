@@ -1,0 +1,5 @@
+{
+    "require": {
+        "indieauth/client": "^0.1.13"
+    }
+}
