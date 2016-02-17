@@ -34,7 +34,7 @@ class Main extends \Idno\Common\Plugin {
 
 
         Idno::site()->addEventHook('user/auth/success', function (Event $event) {
-            $is = Idno::site()->session()->currentUser()->indiesyndicate;
+            $is = (array) Idno::site()->session()->currentUser()->indiesyndicate;
             foreach ($is as $url => $details) {
                 Idno::site()->syndication()->registerServiceAccount('indiesyndicate', $url, $details['name']);
             }
