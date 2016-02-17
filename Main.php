@@ -47,13 +47,17 @@ class Main extends \Idno\Common\Plugin {
             $params = [
                 'h' => 'entry',
                 'content' => $object->body,
-                'in-reply-to' => $object->inreplyto,
                 'url' => $object->getSyndicationURL(),
             ];
+
+            if (is_array($object->inreplyto) && !empty($object->inreplyto)) {
+                $params['in-reply-to'] = $object->inreplyto[0];
+            }
+
             $this->doMicropub($sa, $object, $params);
         });
 
-        Idno::site()->addEventHook('post/photo/indiesyndicate', function (Event $event) {
+        Idno::site()->addEventHook('post/image/indiesyndicate', function (Event $event) {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
@@ -132,6 +136,7 @@ class Main extends \Idno\Common\Plugin {
             $header = $resp['header'];
             $content = $resp['content'];
             $status = $resp['response'];
+            $error = $resp['error'];
 
             // status should be a 200 or a 300
             if ($status >= 200 && $status < 400) {
@@ -146,7 +151,10 @@ class Main extends \Idno\Common\Plugin {
                     Idno::site()->session()->addErrorMessage($msg);
                 }
             } else {
-                $msg = "Error contacting micropub endpoint: $error";
+                if (empty($error) && !empty($content)) {
+                    $error = $content;
+                }
+                $msg = "Error contacting micropub endpoint ($status): $error";
                 Idno::site()->logging()->log($msg, LOGLEVEL_ERROR);
                 Idno::site()->session()->addErrorMessage($msg);
             }

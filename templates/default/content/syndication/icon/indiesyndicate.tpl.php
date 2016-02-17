@@ -1,5 +1,7 @@
 <?php
 
+$username = $vars['username'];
+
 $fa = 'paper-plane';
 if (stristr($username, 'twitter.com')) {
     $fa = 'twitter';

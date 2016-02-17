@@ -21,13 +21,13 @@ $user = Idno::site()->session()->currentUser();
                 <form class="form-horizontal" action="<?= $baseURL ?>account/indiesyndicate/edit" method="POST">
                     <input type="hidden" name="url" value="<?= $url ?>" />
                     <div class="form-group">
-                        <label class="col-md-2 control-label">Name</label> This will be displayed as the name of the service on syndication buttons and links.
+                        <label class="col-md-2 control-label">Name</label>
                         <div class="col-md-10">
                             <input class="form-control" name="name" type="text" value="<?= $details['name'] ?>" />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-md-2 control-label">Access Token</label> The micropub access token for this endpoint.
+                        <label class="col-md-2 control-label">Access Token</label>
                         <div class="col-md-10">
                             <input class="form-control" type="text" value="<?= $details['access_token'] ?>" disabled />
                         </div>
