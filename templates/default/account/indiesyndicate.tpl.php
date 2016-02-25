@@ -27,6 +27,52 @@ $user = Idno::site()->session()->currentUser();
                         </div>
                     </div>
                     <div class="form-group">
+                        <label class="col-md-2 control-label">Icon</label>
+                        <div class="col-md-10">
+                            <select class="form-control" name="icon" style="font-family: FontAwesome, sans;">
+                                <?php foreach ([
+                                    "paper-plane" => "&#xf1d8;",
+                                    "twitter"     => "&#xf099;",
+                                    "facebook"    => "&#xf09a;",
+                                    "flickr"      => "&#xf16e;",
+                                    "instagram"   => "&#xf16d;",
+                                    "youtube"     => "&#xf167;",
+                                    "book"        => "&#xf02d;",
+                                    "github"      => "&#xf09b",
+                                    "git"         => "&#xf1d3",
+                                    "newspaper-o" => "&#xf1ea",
+                                    "google-plus" => "&#xf0d5",
+                                    "medium"      => "&#xf23a;",
+                                    "soundcloud"  => "&#xf1be;",
+                                    "pinterest"   => "&#xf0d2;",
+                                    "wordpress"   => "&#xf19a;",
+                                    "tumblr"      => "&#xf173;",
+                                ] as $option => $unicode) {?>
+                                    <option value="<?= $option ?>" <?= isset($details['icon']) && $details['icon'] === $option ? ' selected' : '' ?>>
+                                        <?= $unicode ?> <?=$option?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label">Style</label>
+                        <div class="col-md-10">
+                            <select class="form-control" name="style">
+                                <?php foreach ([
+                                    "default" => "Default",
+                                    "microblog" => "Microblog",
+                                    "social" => "Social Media",
+                                    "photos" => "Photo Sharing",
+                                ] as $option => $display) { ?>
+                                    <option value="<?= $option ?>" <?= isset($details['style']) && $details['style'] === $option ? ' selected' : '' ?>>
+                                        <?= $display ?>
+                                    </option>
+                                <?php } ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label class="col-md-2 control-label">Access Token</label>
                         <div class="col-md-10">
                             <input class="form-control" type="text" value="<?= $details['access_token'] ?>" disabled />

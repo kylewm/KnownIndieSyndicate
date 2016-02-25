@@ -36,7 +36,7 @@ class Main extends \Idno\Common\Plugin {
         Idno::site()->addEventHook('user/auth/success', function (Event $event) {
             $is = (array) Idno::site()->session()->currentUser()->indiesyndicate;
             foreach ($is as $url => $details) {
-                Idno::site()->syndication()->registerServiceAccount('indiesyndicate', $url, $details['name']);
+                Idno::site()->syndication()->registerServiceAccount('indiesyndicate', $url, $details['name'], $details);
             }
         });
 
@@ -142,7 +142,10 @@ class Main extends \Idno\Common\Plugin {
             if ($status >= 200 && $status < 400) {
                 if (preg_match('/Location:(.*)/i', $header, $matches)) {
                     $syndurl = trim($matches[1]);
-                    $object->setPosseLink('indiesyndicate', $syndurl, $details['name'], $syndurl, $syndacct);
+                    $object->setPosseLink('indiesyndicate', $syndurl, $details['name'], $syndurl, $syndacct, [
+                        'icon' => $details['icon'],
+                        'style' => $details['style'],
+                    ]);
                     $object->save();
                     Idno::site()->session()->addMessage("Syndicated to <a href=\"$syndurl\">$syndurl</a>.");
                 } else {

@@ -11,10 +11,14 @@ class Edit extends \Idno\Common\Page {
 
         $user = Idno::site()->session()->currentUser();
         $url = $this->getInput('url');
-        $name = $this->getInput('name');
 
-        if ($url && $name) {
-            $user->indiesyndicate[$url]['name'] = $name;
+        if ($url) {
+            foreach (['name', 'icon', 'style'] as $key) {
+                $value = $this->getInput($key);
+                if ($value) {
+                    $user->indiesyndicate[$url][$key] = $value;
+                }
+            }
         }
 
         $user->save();
