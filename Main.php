@@ -44,6 +44,9 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            $details = $this->getAccountDetails($sa);
+            $style = isset($details['style']) ? $details['style'] : 'default';
+
             $params = [
                 'h' => 'entry',
                 'content' => $object->body,
@@ -61,13 +64,34 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            $details = $this->getAccountDetails($sa);
+            $style = isset($details['style']) ? $details['style'] : 'default';
 
-            $params = [
-                'h' => 'entry',
-                'name' => $object->title,
-                'content' => $object->body,
-                'url' => $object->getSyndicationURL(),
-            ];
+            if ($style === 'microblog') {
+                // combine name and content for twitter
+
+                $content = '';
+                if ($object->title) {
+                    $content .= $object->title;
+                }
+                if ($object->body) {
+                    if (!empty($content)) { $content .= "\n"; }
+                    $content .= trim(strip_tags($object->body));
+                }
+
+                $params = [
+                    'h' => 'entry',
+                    'content' => $content,
+                    'url' => $object->getSyndicationURL(),
+                ];
+            } else {
+                $params = [
+                    'h' => 'entry',
+                    'name' => $object->title,
+                    'content' => $object->body,
+                    'url' => $object->getSyndicationURL(),
+                ];
+            }
 
             foreach ($object->getAttachments() as $attachment) {
                 if ($file = \Idno\Entities\File::getByID($attachment['_id'])) {
@@ -89,12 +113,24 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
-            $params = [
-                'h' => 'entry',
-                'name' => $object->title,
-                'content' => $object->body,
-                'url' => $object->getSyndicationURL(),
-            ];
+            $details = $this->getAccountDetails($sa);
+            $style = isset($details['style']) ? $details['style'] : 'default';
+
+            if ($style === 'microblog') {
+                $params = [
+                    'h' => 'entry',
+                    'content' => $object->title . ': ' . $object->getSyndicationURL(),
+                    'url' => $object->getSyndicationURL(),
+                ];
+            } else {
+                $params = [
+                    'h' => 'entry',
+                    'name' => $object->title,
+                    'content' => $object->body,
+                    'url' => $object->getSyndicationURL(),
+                ];
+            }
+
             $this->doMicropub($sa, $object, $params);
         });
 
@@ -102,6 +138,9 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            $details = $this->getAccountDetails($sa);
+            $style = isset($details['style']) ? $details['style'] : 'default';
+
             $params = [
                 'h' => 'entry',
                 'like-of' => $object->likeof,
@@ -114,6 +153,9 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            $details = $this->getAccountDetails($sa);
+            $style = isset($details['style']) ? $details['style'] : 'default';
+
             $params = [
                 'h' => 'entry',
                 'repost-of' => $object->repostof,
@@ -124,9 +166,7 @@ class Main extends \Idno\Common\Plugin {
     }
 
     private function doMicropub($syndacct, $object, $params) {
-        $user = Idno::site()->session()->currentUser();
-        if (!empty($user->indiesyndicate[$syndacct])) {
-            $details = $user->indiesyndicate[$syndacct];
+        if ($details = $this->getAccountDetails($syndacct)) {
             $headers = [
                 'Authorization: Bearer ' . $details['access_token'],
             ];
@@ -162,6 +202,14 @@ class Main extends \Idno\Common\Plugin {
                 Idno::site()->session()->addErrorMessage($msg);
             }
         }
+    }
+
+    private function getAccountDetails($syndacct) {
+        $user = Idno::site()->session()->currentUser();
+        if (isset($user->indiesyndicate[$syndacct])) {
+            return $user->indiesyndicate[$syndacct];
+        }
+        return false;
     }
 
     private static function filterEmpty($obj) {
