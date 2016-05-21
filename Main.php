@@ -195,7 +195,7 @@ class Main extends \Idno\Common\Plugin {
 
         // support for 2xx Created and 3xx Redirect
         if ($status >= 200 && $status < 400) {
-            $headers = http_parse_header($resp['headers']);
+            $headers = http_parse_headers($resp['headers']);
             $syndurl = false;
             foreach ($headers as $key => $value) {
                 if (strtolower($key) === 'location') {
