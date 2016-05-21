@@ -4,6 +4,7 @@ namespace IdnoPlugins\IndieSyndicate;
 
 use Idno\Core\Idno;
 use Idno\Core\Event;
+use Idno\Core\MentionClient;
 use Idno\Core\Webservice;
 
 class Main extends \Idno\Common\Plugin {
@@ -20,6 +21,7 @@ class Main extends \Idno\Common\Plugin {
         Idno::site()->addPageHandler('/account/indiesyndicate/add/?', '\IdnoPlugins\IndieSyndicate\Pages\Add');
         Idno::site()->addPageHandler('/account/indiesyndicate/cb/?', '\IdnoPlugins\IndieSyndicate\Pages\Callback');
         Idno::site()->addPageHandler('/account/indiesyndicate/edit/?', '\IdnoPlugins\IndieSyndicate\Pages\Edit');
+        Idno::site()->addPageHandler('/account/indiesyndicate/delete/?', '\IdnoPlugins\IndieSyndicate\Pages\Delete');
 
         Idno::site()->template()->extendTemplate('account/menu/items', 'account/menu/items/indiesyndicate');
     }
@@ -44,19 +46,18 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            if ($this->doWebmention($sa, $object)) return;
+
             $details = $this->getAccountDetails($sa);
             $style = isset($details['style']) ? $details['style'] : 'default';
-
             $params = [
-                'h' => 'entry',
+                'h'       => 'entry',
                 'content' => $object->body,
-                'url' => $object->getSyndicationURL(),
+                'url'     => $object->getSyndicationURL(),
             ];
-
             if (is_array($object->inreplyto) && !empty($object->inreplyto)) {
                 $params['in-reply-to'] = $object->inreplyto[0];
             }
-
             $this->doMicropub($sa, $object, $params);
         });
 
@@ -64,9 +65,10 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            if ($this->doWebmention($sa, $object)) return;
+
             $details = $this->getAccountDetails($sa);
             $style = isset($details['style']) ? $details['style'] : 'default';
-
             if ($style === 'microblog') {
                 // combine name and content for twitter
 
@@ -113,6 +115,8 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            if ($this->doWebmention($sa, $object)) return;
+
             $details = $this->getAccountDetails($sa);
             $style = isset($details['style']) ? $details['style'] : 'default';
 
@@ -138,6 +142,8 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            if ($this->doWebmention($sa, $object)) return;
+
             $details = $this->getAccountDetails($sa);
             $style = isset($details['style']) ? $details['style'] : 'default';
 
@@ -153,6 +159,8 @@ class Main extends \Idno\Common\Plugin {
             $eventdata = $event->data();
             $sa = $eventdata['syndication_account'];
             $object = $eventdata['object'];
+            if ($this->doWebmention($sa, $object)) return;
+
             $details = $this->getAccountDetails($sa);
             $style = isset($details['style']) ? $details['style'] : 'default';
 
@@ -165,12 +173,62 @@ class Main extends \Idno\Common\Plugin {
         });
     }
 
+    private function doWebmention($syndacct, $object) {
+        $details = $this->getAccountDetails($syndacct);
+        if (!$details || $details['method'] !== 'webmention') {
+            return false;
+        }
+
+        // temporarily set the syndication link to the syndication url
+        $object->setPosseLink('indiesyndicate', $syndacct);
+        $object->save();
+
+        // send a webmention!
+        $client = new MentionClient();
+        $resp = $client->sendWebmention($object->getSyndicationURL(), $syndacct);
+
+        // bit of a hack to remove the temporary url
+        array_pop($object->posse['indiesyndicate']);
+
+        $status = $resp['code'];
+
+        // support for 2xx Created and 3xx Redirect
+        if ($status >= 200 && $status < 400) {
+            $headers = http_parse_header($resp['headers']);
+            $syndurl = false;
+            foreach ($headers as $key => $value) {
+                if (strtolower($key) === 'location') {
+                    $syndurl = $value;
+                    break;
+                }
+            }
+            $msg = "Successfully webmention $syndacct.";
+            if ($syndurl) {
+                $object->setPosseLink('indiesyndicate', $syndurl);
+                $object->setPosseLink(
+                    'indiesyndicate', $syndurl, $details['name'], $syndurl, $syndacct,
+                    ['icon' => $details['icon']]);
+                $msg .= " Returned URL $syndurl.";
+            }
+            Idno::site()->session()->addMessage($msg);
+            Idno::site()->logging()->info($msg);
+        } else {
+            $msg = "Sending webmention to $syndacct failed.";
+            Idno::site()->session()->addErrorMessage($msg);
+            Idno::site()->logging()->error($msg, ['response' => $resp]);
+        }
+
+        $object->save();
+        return true;
+    }
+
     private function doMicropub($syndacct, $object, $params) {
         if ($details = $this->getAccountDetails($syndacct)) {
             $headers = [
                 'Authorization: Bearer ' . $details['access_token'],
             ];
 
+            Idno::site()->logging()->debug('sending micropub request', ['endpoint' => $details['micropub_endpoint'], 'params' => $params]);
             $resp = Webservice::post($details['micropub_endpoint'], self::filterEmpty($params), $headers);
 
             $header = $resp['header'];
@@ -198,9 +256,13 @@ class Main extends \Idno\Common\Plugin {
                     $error = $content;
                 }
                 $msg = "Error contacting micropub endpoint ($status): $error";
-                Idno::site()->logging()->log($msg, LOGLEVEL_ERROR);
+                Idno::site()->logging()->error($msg);
                 Idno::site()->session()->addErrorMessage($msg);
             }
+        } else {
+            $msg = "Could not get account details for syndication account $syndacct";
+            Idno::site()->logging()->error($msg);
+            Idno::site()->session()->addErrorMessage($msg);
         }
     }
 
