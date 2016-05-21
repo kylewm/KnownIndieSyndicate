@@ -74,7 +74,7 @@ class Main extends \Idno\Common\Plugin {
 
                 $content = '';
                 if ($object->title) {
-                    $content .= $object->title;
+                    $content .= strip_tags($object->title);
                 }
                 if ($object->body) {
                     if (!empty($content)) { $content .= "\n"; }
@@ -89,8 +89,8 @@ class Main extends \Idno\Common\Plugin {
             } else {
                 $params = [
                     'h' => 'entry',
-                    'name' => $object->title,
-                    'content' => $object->body,
+                    'name' => $object->title ? strip_tags($object->title) : '',
+                    'content' => $object->body ? strip_tags($object->body) : '',
                     'url' => $object->getSyndicationURL(),
                 ];
             }
@@ -123,14 +123,14 @@ class Main extends \Idno\Common\Plugin {
             if ($style === 'microblog') {
                 $params = [
                     'h' => 'entry',
-                    'content' => $object->title . ': ' . $object->getSyndicationURL(),
+                    'content' => strip_tags($object->title) . ': ' . $object->getSyndicationURL(),
                     'url' => $object->getSyndicationURL(),
                 ];
             } else {
                 $params = [
                     'h' => 'entry',
-                    'name' => $object->title,
-                    'content' => $object->body,
+                    'name' => strip_tags($object->title),
+                    'content' => strip_tags($object->body),
                     'url' => $object->getSyndicationURL(),
                 ];
             }
