@@ -195,16 +195,9 @@ class Main extends \Idno\Common\Plugin {
 
         // support for 2xx Created and 3xx Redirect
         if ($status >= 200 && $status < 400) {
-            $headers = http_parse_headers($resp['headers']);
-            $syndurl = false;
-            foreach ($headers as $key => $value) {
-                if (strtolower($key) === 'location') {
-                    $syndurl = $value;
-                    break;
-                }
-            }
             $msg = "Successfully webmention $syndacct.";
-            if ($syndurl) {
+            if (isset($resp['headers']['Location'])) {
+                $syndurl = $resp['headers']['Location'];
                 $object->setPosseLink('indiesyndicate', $syndurl);
                 $object->setPosseLink(
                     'indiesyndicate', $syndurl, $details['name'], $syndurl, $syndacct,
