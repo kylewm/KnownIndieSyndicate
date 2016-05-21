@@ -12,6 +12,19 @@ IndiePub plugin enabled, and WordPress sites that have
 I'm aware of) that support syndicating via webmention. When they get a
 webmention from you, they parse the source for content and syndicate it.
 
+## Installation
+
+Because this plugin contains submodules, make sure to clone recursively
+when installing
+
+```
+$ cd Known/IdnoPlugins
+$ git clone --recursive https://github.com/kylewm/KnownIndieSyndicate.git IndieSyndicate
+```
+
+Enable the plugin under `Site Configuration > Plugins` and then go to
+`Account Settings > IndieSyndicate` to add some endpoints!
+
 ## License
 
 This software is dedicated to the public domain under Creative Commons [CC0][].

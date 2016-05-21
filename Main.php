@@ -175,7 +175,8 @@ class Main extends \Idno\Common\Plugin {
 
     private function doWebmention($syndacct, $object) {
         $details = $this->getAccountDetails($syndacct);
-        if (!$details || $details['method'] !== 'webmention') {
+        if (!$details || !isset($details['method'])
+            || $details['method'] !== 'webmention') {
             return false;
         }
 

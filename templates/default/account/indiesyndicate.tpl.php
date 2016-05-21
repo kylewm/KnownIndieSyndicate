@@ -56,7 +56,7 @@ $user = Idno::site()->session()->currentUser();
                         </div>
                     </div>
 
-                    <?php if ($details['method'] !== 'webmention') { ?>
+                    <?php if (!isset($details['method']) || $details['method'] !== 'webmention') { ?>
                         <div class="form-group">
                             <label class="col-md-2 control-label">Style</label>
                             <div class="col-md-10">
