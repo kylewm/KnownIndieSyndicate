@@ -191,14 +191,11 @@ class Main extends \Idno\Common\Plugin {
         // bit of a hack to remove the temporary url
         array_pop($object->posse['indiesyndicate']);
 
-        $status = $resp['code'];
-
         // support for 2xx Created and 3xx Redirect
-        if ($status >= 200 && $status < 400) {
+        if ($resp['code'] >= 200 && $resp['code'] < 400) {
             $msg = "Successfully webmention $syndacct.";
             if (isset($resp['headers']['Location'])) {
                 $syndurl = $resp['headers']['Location'];
-                $object->setPosseLink('indiesyndicate', $syndurl);
                 $object->setPosseLink(
                     'indiesyndicate', $syndurl, $details['name'], $syndurl, $syndacct,
                     ['icon' => $details['icon']]);
