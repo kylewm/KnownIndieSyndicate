@@ -55,38 +55,43 @@ $user = Idno::site()->session()->currentUser();
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="col-md-2 control-label">Style</label>
-                        <div class="col-md-10">
-                            <select class="form-control" name="style">
-                                <?php foreach ([
-                                    "default" => "Default",
-                                    "microblog" => "Microblog",
-                                    "social" => "Social Media",
-                                    "photos" => "Photo Sharing",
-                                ] as $option => $display) { ?>
-                                    <option value="<?= $option ?>" <?= isset($details['style']) && $details['style'] === $option ? ' selected' : '' ?>>
-                                        <?= $display ?>
-                                    </option>
-                                <?php } ?>
-                            </select>
+
+                    <?php if ($details['method'] !== 'webmention') { ?>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Style</label>
+                            <div class="col-md-10">
+                                <select class="form-control" name="style">
+                                    <?php foreach ([
+                                        "default" => "Default",
+                                        "microblog" => "Microblog",
+                                        "social" => "Social Media",
+                                        "photos" => "Photo Sharing",
+                                    ] as $option => $display) { ?>
+                                        <option value="<?= $option ?>" <?= isset($details['style']) && $details['style'] === $option ? ' selected' : '' ?>>
+                                            <?= $display ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-2 control-label">Access Token</label>
-                        <div class="col-md-10">
-                            <input class="form-control" type="text" value="<?= $details['access_token'] ?>" disabled />
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Access Token</label>
+                            <div class="col-md-10">
+                                <input class="form-control" type="text" value="<?= $details['access_token'] ?>" disabled />
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-md-2 control-label">Endpoint</label>
-                        <div class="col-md-10">
-                            <input class="form-control" type="text" value="<?= $details['micropub_endpoint'] ?>" disabled />
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">Endpoint</label>
+                            <div class="col-md-10">
+                                <input class="form-control" type="text" value="<?= $details['micropub_endpoint'] ?>" disabled />
+                            </div>
                         </div>
-                    </div>
+                    <?php } ?>
+
                     <div class="form-group">
                         <div class="col-md-offset-2 col-md-10">
                             <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="submit" formaction="<?= $baseURL ?>account/indiesyndicate/delete" class="btn btn-default">Remove</button>
                         </div>
                     </div>
                     <?= Idno::site()->actions()->signForm('/account/indiesyndicate/') ?>

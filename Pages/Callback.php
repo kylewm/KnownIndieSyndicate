@@ -39,6 +39,7 @@ class Callback extends \Idno\Common\Page {
                 'name' => $name,
                 'access_token' => $token,
                 'micropub_endpoint' => $micropub_endpoint,
+                'method' => 'micropub',
             ];
 
             $user->save();

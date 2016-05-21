@@ -1,0 +1,9 @@
+[submodule "external/barnabywalters/mf-cleaner"]
+	path = external/barnabywalters/mf-cleaner
+	url = https://github.com/barnabywalters/php-mf-cleaner.git
+[submodule "external/indieauth/client"]
+	path = external/indieauth/client
+	url = https://github.com/indieweb/indieauth-client-php.git
+[submodule "external/indieweb/link-rel-parser"]
+	path = external/indieweb/link-rel-parser
+	url = https://github.com/indieweb/link-rel-parser-php.git
